@@ -97,7 +97,8 @@ if args["i"]:
 
     if not found_time_header:
         print(
-            "Please ensure the header of the time column is spelled correctly, cased properly, and is wrapped in quotes")
+            "Please ensure the header of the time column is spelled correctly, "
+            "cased properly, and is wrapped in quotes")
         quit()
 
 if args["l"]:
@@ -110,7 +111,8 @@ if args["l"]:
 
     if not found_label_header:
         print(
-            "Please ensure the header of the label column is spelled correctly, cased properly, and is wrapped in quotes")
+            "Please ensure the header of the label column is spelled correctly, "
+            "cased properly, and is wrapped in quotes")
         quit()
 
 if args["n"]:
@@ -123,7 +125,8 @@ if args["n"]:
 
     if not found_notes_header:
         print(
-            "Please ensure the header of the notes column is spelled correctly, cased properly, and is wrapped in quotes")
+            "Please ensure the header of the notes column is spelled correctly, "
+            "cased properly, and is wrapped in quotes")
         quit()
 
 if args["s"]:
@@ -136,7 +139,8 @@ if args["s"]:
 
     if not found_scene_header:
         print(
-            "Please ensure the header of the scene column is spelled correctly, cased properly, and is wrapped in quotes")
+            "Please ensure the header of the scene column is spelled correctly, "
+            "cased properly, and is wrapped in quotes")
         quit()
 
 if args["b"]:
@@ -149,7 +153,8 @@ if args["b"]:
 
     if not found_block_header:
         print(
-            "Please ensure the header of the block column is spelled correctly, cased properly, and is wrapped in quotes")
+            "Please ensure the header of the block column is spelled correctly, "
+            "cased properly, and is wrapped in quotes")
         quit()
 
 if args["m"]:
@@ -162,7 +167,8 @@ if args["m"]:
 
     if not found_mark_header:
         print(
-            "Please ensure the header of the mark column is spelled correctly, cased properly, and is wrapped in quotes")
+            "Please ensure the header of the mark column is spelled correctly, "
+            "cased properly, and is wrapped in quotes")
         quit()
 
 if args["f"]:
@@ -175,7 +181,8 @@ if args["f"]:
 
     if not found_follow_header:
         print(
-            "Please ensure the header of the follow column is spelled correctly, cased properly, and is wrapped in quotes")
+            "Please ensure the header of the follow column is spelled correctly, "
+            "cased properly, and is wrapped in quotes")
         quit()
 
 if args["x"]:
@@ -188,25 +195,36 @@ if args["x"]:
 
     if not found_execute_header:
         print(
-            "Please ensure the header of the Execute column is spelled correctly, cased properly, and is wrapped in quotes")
+            "Please ensure the header of the Execute column is spelled correctly, "
+            "cased properly, and is wrapped in quotes")
         quit()
 
 # Trim the table headers off
 rows = rows[1:]
 
+# Go to Live so cues can be recorded
+client.send_message("/eos/key/live", "")
+
+# Record cues
 for i in range(len(rows)):
     # Loop through table, sending whatever OSC messages we can
     client.send_message("/eos/newcmd", "Record Cue %s Enter" % rows[i][cue_header_index])
     if found_time_header:
-        client.send_message("/eos/newcmd", "Cue %s Time %s Enter" % (rows[i][cue_header_index], rows[i][time_header_index]))
+        time_separator = " / "
+        split_time = rows[i][time_header_index].split("/")
+        time_string = time_separator.join(split_time)
+        client.send_message("/eos/newcmd", "Cue %s Time %s Enter" % (rows[i][cue_header_index], time_string))
     if found_label_header:
-        client.send_message("/eos/newcmd", "Cue %s Label %s Enter" % (rows[i][cue_header_index], rows[i][label_header_index]))
+        client.send_message("/eos/newcmd", "Cue %s Label %s Enter" %
+                            (rows[i][cue_header_index], rows[i][label_header_index]))
     if found_notes_header:
-        client.send_message("/eos/newcmd", "Cue %s Notes %s Enter" % (rows[i][cue_header_index], rows[i][notes_header_index]))
+        client.send_message("/eos/newcmd", "Cue %s Notes %s Enter" %
+                            (rows[i][cue_header_index], rows[i][notes_header_index]))
     if found_scene_header:
         # If the user put anything in the scene cell, treat it as a scene header
         if len(rows[i][scene_header_index]) > 0:
-            client.send_message("/eos/newcmd", "Cue %s Scene %s Enter" % (rows[i][cue_header_index], rows[i][scene_header_index]))
+            client.send_message("/eos/newcmd", "Cue %s Scene %s Enter" %
+                                (rows[i][cue_header_index], rows[i][scene_header_index]))
     if found_block_header:
         # If the user put anything in the block cell, block the cue
         if len(rows[i][block_header_index]) > 0:
@@ -216,9 +234,13 @@ for i in range(len(rows)):
         if len(rows[i][mark_header_index]) > 0:
             client.send_message("/eos/newcmd", "Cue %s Mark Enter" % rows[i][cue_header_index])
     if found_follow_header:
-        client.send_message("/eos/newcmd", "Cue %s Follow %s Enter" % (rows[i][cue_header_index], rows[i][follow_header_index]))
+        # If the user put anything in the follow cell, treat it as a follow time
+        client.send_message("/eos/newcmd", "Cue %s Follow %s Enter" %
+                            (rows[i][cue_header_index], rows[i][follow_header_index]))
     if found_execute_header:
-        client.send_message("/eos/newcmd", "Cue %s Execute %s Enter" % (rows[i][cue_header_index], rows[i][execute_header_index]))
+        # If the user put anything in the execute cell, hope they formatted it correctly, because we can't check.
+        client.send_message("/eos/newcmd", "Cue %s Execute %s Enter" %
+                            (rows[i][cue_header_index], rows[i][execute_header_index]))
         client.send_message("/eos/newcmd", "Enter")
 
     time.sleep(.2)
